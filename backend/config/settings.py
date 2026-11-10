@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     # Local apps
     "apps.accounts.apps.AccountsConfig",
     "rest_framework_simplejwt.token_blacklist",
+    
+    "apps.market_data.apps.MarketDataConfig",
 ]
 
 MIDDLEWARE = [
