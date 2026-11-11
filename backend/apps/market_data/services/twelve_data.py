@@ -54,3 +54,21 @@ class TwelveDataClient:
                 "exchange": exchange,
             },
         )
+        
+class get_time_series(
+    self,
+    symbol,
+    interval= "1day",
+    outputsize= 30,
+    exchange="NSE",
+):
+    return self._get(
+        "time_series",
+        {
+            "symbols": symbols,
+            "interval": inteval,
+            "outputsize": outputsize,
+            "exchange": exchange,
+            "country": "India",
+        }
+    )
