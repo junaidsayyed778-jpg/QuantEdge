@@ -2,9 +2,9 @@ from django.db import models
 
 
 class Stock(models.Model):
-    symbol = models.CharField(max_length=10, unique=True)
+    symbol = models.CharField(max_length=30, unique=True)
     company_name = models.CharField(max_length=255)
-    exchange = models.CharField(max_length=10)
+    exchange = models.CharField(max_length=50)
     sector = models.CharField(max_length=100, blank=True, null=True)
 
     is_active = models.BooleanField(default=True)

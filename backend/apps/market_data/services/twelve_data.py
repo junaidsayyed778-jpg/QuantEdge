@@ -27,7 +27,7 @@ class TwelveDataClient:
             response = self.session.get(
                 f"{self.BASE_URL}/{endpoint}",
                 params=request_params,
-                timeout=15,
+                timeout=60,
             )
 
             response.raise_for_status()
