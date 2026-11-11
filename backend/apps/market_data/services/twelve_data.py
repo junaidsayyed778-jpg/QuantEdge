@@ -30,13 +30,19 @@ class TwelveDataClient:
                 timeout=60,
             )
 
-            response.raise_for_status()
-
-            data = response.json()
-
-            if data.get("status") == "error":
+            try:
+                data = response.json()
+            except ValueError:
+                response.raise_for_status()
                 raise RuntimeError(
-                    f"Twelve Data API error: {data.get('message')}"
+                    "Twelve Data returned an invalid JSON response."
+                )
+
+            if response.status_code >= 400 or data.get("status") == "error":
+                raise RuntimeError(
+                    f"Twelve Data API error "
+                    f"(HTTP {response.status_code}): "
+                    f"{data.get('message', 'Unknown error')}"
                 )
 
             return data
@@ -55,20 +61,19 @@ class TwelveDataClient:
             },
         )
         
-class get_time_series(
-    self,
-    symbol,
-    interval= "1day",
-    outputsize= 30,
-    exchange="NSE",
-):
-    return self._get(
-        "time_series",
-        {
-            "symbols": symbols,
-            "interval": inteval,
-            "outputsize": outputsize,
-            "exchange": exchange,
-            "country": "India",
-        }
-    )
+    def get_time_series(
+        self,
+        symbol,
+        interval="1day",
+        outputsize=30,
+        exchange="NSE",
+    ):
+        return self._get(
+            "time_series",
+            {
+                "symbol": f"{symbol}:{exchange}",
+                "interval": interval,
+                "outputsize": outputsize,
+                "country": "India",
+            },
+        )
