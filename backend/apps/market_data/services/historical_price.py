@@ -1,3 +1,5 @@
+#Fetch and store historical OHLCV
+
 from decimal import Decimal
 
 from django.db import transaction
