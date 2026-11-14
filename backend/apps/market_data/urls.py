@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
-from .views import StockViewSet, LatestStockPriceView
+from .views import StockViewSet, LatestStockPriceView, StockDetailView
 
 router = DefaultRouter()
 
@@ -17,6 +17,11 @@ urlpatterns = [
         LatestStockPriceView.as_view(),
         name="latest-stock-price",
     ),
+    path(
+        "stocks/<str:symbol>/",
+        StockDetailView.as_view(),
+        name="stock-detail",
+    )
 ]
 
 urlpatterns += router.urls

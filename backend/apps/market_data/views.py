@@ -85,3 +85,59 @@ class LatestStockPriceView(APIView):
             raise APIException(
                 f"Unable to fetch latest price: {error}"
             )
+            
+class StockDetailView(APIView):
+    
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, symbol):
+        
+        try:
+            #1. Get stock information
+            stock = Stock.objects.get(
+                symbol=symbol.upper(),
+                exchange="NSE",
+                is_active=True,
+            )
+            
+            #2. Get latest price through existing Redis-enable service
+            latest_price = LatestPriceService().get_stock_latest_price(
+                symbol
+            )
+            
+            #3. Get historical price records
+            historical_prices = stock.historical_prices.all().order_by(
+                "-trading_date"
+            )
+            
+            #4. Paginate historical records
+            paginator = StockPagination()
+            paginator.page_size = 10
+            
+            paginated_prices = paginator.paginate_queryset(
+                historical_prices, request
+            )
+            
+            #5. Serialize stock information
+            stock_serializer = StockSerializer(stock)
+            
+            return Response({
+                "success": True,
+                "data": {
+                    "stock": stock_serializer.data,
+                    "latest_price": latest_price,
+                    "historical_prices": paginator.get_paginated_response(
+                        paginated_prices
+                    ).data,
+                },
+            }, status=status.HTTP_200_OK)
+            
+        except Stock.DoesNotExist:
+            raise NotFound(
+                f"Active NSE stock '{symbol}' was not found."
+            )
+        
+        except ValueError as error:
+            raise APIException(
+                f"Unable to fetch stock details: {error}"
+            )

@@ -166,4 +166,18 @@ SIMPLE_JWT = {
 
 TWELVE_DATA_API_KEY = os.getenv("TWELVE_DATA_API_KEY")
 
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": os.getenv(
+            "REDIS_URL",
+            "redis://127.0.0.1:6380/1"
+        ),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+        "TIMEOUT": 60,
+    }
+}
+
 
