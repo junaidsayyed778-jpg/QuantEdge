@@ -1,8 +1,9 @@
 from rest_framework import serializers
-from .models import Stock
+from .models import Stock, HistoricalPrice
+
 
 class StockSerializer(serializers.ModelSerializer):
-    
+
     class Meta:
         model = Stock
         fields = [
@@ -15,17 +16,17 @@ class StockSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        
         read_only_fields = ["id", "created_at", "updated_at"]
-        
+
+
 class HistoricalPriceSerializer(serializers.ModelSerializer):
-    
+
+    date = serializers.DateField(source="trading_date")
+
     class Meta:
-        model = Stock
+        model = HistoricalPrice
         fields = [
-            "id",
-            "stock",
-            "trading_date",
+            "date",
             "open",
             "high",
             "low",
@@ -33,7 +34,4 @@ class HistoricalPriceSerializer(serializers.ModelSerializer):
             "adjusted_close",
             "volume",
             "data_source",
-            "created_at",
         ]
-        
-        read_only_fields = ["id", "created_at"]

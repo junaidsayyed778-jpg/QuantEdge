@@ -1,3 +1,5 @@
+from .serializers import StockSerializer, HistoricalPriceSerializer
+
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import viewsets, status
@@ -9,7 +11,6 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.pagination import PageNumberPagination
 
 from .models import Stock
-from .serializers import StockSerializer
 from .services.latest_price import LatestPriceService
 
 
@@ -85,58 +86,64 @@ class LatestStockPriceView(APIView):
             raise APIException(
                 f"Unable to fetch latest price: {error}"
             )
-            
+
 class StockDetailView(APIView):
-    
+
     permission_classes = [IsAuthenticated]
-    
+
     def get(self, request, symbol):
-        
+
         try:
-            #1. Get stock information
+            # 1. Fetch stock
             stock = Stock.objects.get(
                 symbol=symbol.upper(),
                 exchange="NSE",
                 is_active=True,
             )
-            
-            #2. Get latest price through existing Redis-enable service
+
+            # 2. Fetch latest price
             latest_price = LatestPriceService().get_stock_latest_price(
                 symbol
             )
-            
-            #3. Get historical price records
+
+            # 3. Fetch historical prices
             historical_prices = stock.historical_prices.all().order_by(
                 "-trading_date"
             )
-            
-            #4. Paginate historical records
+
+            # 4. Paginate historical prices
             paginator = StockPagination()
-            paginator.page_size = 10
-            
             paginated_prices = paginator.paginate_queryset(
-                historical_prices, request
+                historical_prices,
+                request
             )
-            
-            #5. Serialize stock information
-            stock_serializer = StockSerializer(stock)
-            
+
+            # 5. Serialize historical prices
+            historical_data = HistoricalPriceSerializer(
+                paginated_prices,
+                many=True
+            ).data
+
+            # 6. Serialize stock
+            stock_data = StockSerializer(stock).data
+
+            # 7. Return JSON response
             return Response({
                 "success": True,
                 "data": {
-                    "stock": stock_serializer.data,
+                    "stock": stock_data,
                     "latest_price": latest_price,
                     "historical_prices": paginator.get_paginated_response(
-                        paginated_prices
+                        historical_data
                     ).data,
                 },
             }, status=status.HTTP_200_OK)
-            
+
         except Stock.DoesNotExist:
             raise NotFound(
                 f"Active NSE stock '{symbol}' was not found."
             )
-        
+
         except ValueError as error:
             raise APIException(
                 f"Unable to fetch stock details: {error}"
