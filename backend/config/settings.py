@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     
     "apps.market_data.apps.MarketDataConfig",
+    
+    "apps.analysis_engine",
 ]
 
 MIDDLEWARE = [
