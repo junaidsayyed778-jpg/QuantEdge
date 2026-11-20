@@ -178,6 +178,7 @@ def calculate_zone_volume_confirmation(
                 "average_relative_volume": None,
                 "high_volume_touches": 0,
                 "volume_confirmation": "insufficient_data",
+                "volume_score": 0,
             })
             continue
         
@@ -268,26 +269,15 @@ def calculate_zone_reactions(
                 
             reactions.append(max(0.0, float(reaction_pct)))
             
-        if reactions:
-            
-            average_reaction = sum(reactions) / len(reactions)
-            
-            reaction_score = calculate_reaction_score(
-                average_reaction
-            )
-            
-        else:
-            
-            average_reaction = None
-            reaction_score = 0
+        if not reactions:
+            continue
+
+        average_reaction = sum(reactions) / len(reactions)
+        reaction_score = calculate_reaction_score(average_reaction)
             
         results.append({
             **level,
-            "average_reaction_pct": (
-                round(average_reaction, 2)
-                if average_reaction is not None
-                else None
-            ),
+            "average_reaction_pct": round(average_reaction, 2),
             "reaction_score": reaction_score,
             "reaction_observations": len(reactions),
         })
@@ -354,6 +344,8 @@ def calculate_zone_strength(
             **level,
             "touch_score": round(touch_score),
             "volume_score": volume_score,
+            "strength_score": round(overall_strength, 2),
+            "strength": category,
             "overall_strength": round(overall_strength, 2),
             "strength_category": category,
         })
