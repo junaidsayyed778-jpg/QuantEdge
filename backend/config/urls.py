@@ -13,4 +13,8 @@ urlpatterns = [
         "api/v1/market/",
         include("apps.market_data.urls")
     ),
+    path(
+       "api/v1/analysis/",
+       include("apps.analysis_engine.urls"),
+    ),
 ]
