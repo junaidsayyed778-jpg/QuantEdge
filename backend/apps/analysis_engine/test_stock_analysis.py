@@ -48,7 +48,7 @@ class StockAnalysisIntegrationTests(TestCase):
 
         self.assertEqual(result["stock"]["symbol"], "TEST")
         self.assertIn("analysis_date", result)
-        self.assertGreater(result["current_price"], 0)
+        self.assertGreater(result["latest_close"], 0)
 
         self.assertIn("overall_score", result["scores"])
         self.assertIn("signal", result["scores"])

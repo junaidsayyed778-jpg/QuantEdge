@@ -224,7 +224,7 @@ def analyze_stock(symbol: str):
             "exchange": stock.exchange,
         },
         "analysis_date": str(latest["trading_date"]),
-        "latest_price": float(latest["close"]),
+        "latest_close": float(latest["close"]),
         "scores": final_signal,
         "support_zones": support_zones,
         "resistance_zones": resistance_zones,
