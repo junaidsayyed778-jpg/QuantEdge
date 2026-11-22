@@ -28,11 +28,12 @@ class StockAnalysis(models.Model):
         max_length=30,
     )
 
-    categoy_score = models.JSONField(default=dict)
+    category_scores = models.JSONField(default=dict)
 
     support_zones = models.JSONField(default=list)
 
-    resistance_zone = models.JSONField(default=list)
+
+    resistance_zones = models.JSONField(default=list)
 
     created_at = models.DateTimeField(auto_now_add=True)
 

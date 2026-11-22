@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from apps.analysis_engine.models import StockAnalysis
 from apps.market_data.models import Stock, HistoricalPrice
 from django.contrib.auth import get_user_model
 
@@ -62,6 +63,24 @@ class StockAnalysisAPITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["stock"]["symbol"], "TEST")
         self.assertEqual(response.data["latest_close"], 150.0)
+
+        self.assertEqual(
+            StockAnalysis.objects.filter(user=self.user).count(),
+            1,
+        )
+        self.assertTrue(response.data["history"]["created"])
+
+        second_response = self.client.get(self.url)
+
+        self.assertEqual(
+            second_response.status_code,
+            status.HTTP_200_OK,
+        )
+        self.assertEqual(
+            StockAnalysis.objects.filter(user=self.user).count(),
+            1,
+        )
+        self.assertFalse(second_response.data["history"]["created"])
 
     @patch("apps.analysis_engine.views.analyze_stock")
     def test_invalid_stock(self, mock_analyze):
