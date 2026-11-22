@@ -10,6 +10,9 @@ from rest_framework.pagination import PageNumberPagination
 from .models import StockAnalysis
 from .serializers import AnalysisHistorySerializer
 
+from rest_framework.generics import RetrieveAPIView
+
+from .serializers import AnalysisDetailSerializer
 class StockAnalysisView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -52,4 +55,15 @@ class AnalysisHistoryView(ListAPIView):
             .filter(user=self.request.user)
             .select_related("stock")
             .order_by("-created_at")
+        )
+        
+class AnalysisHistoryDetailView(RetrieveAPIView):
+    serializer_class = AnalysisDetailSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        return(
+            StockAnalysis.objects
+            .filter(user=self.request.user)
+            .select_related("stock")
         )

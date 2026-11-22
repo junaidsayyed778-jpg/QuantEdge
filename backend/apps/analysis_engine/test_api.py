@@ -195,3 +195,43 @@ class AnalysisHistoryAPITests(APITestCase):
         self.assertEqual(response.data["count"], 12)
         self.assertEqual(len(response.data["results"]), 5)
         self.assertIsNotNone(response.data["next"])
+
+    def test_retrieve_analysis_detail(self):
+        analysis = self.create_analysis(
+            self.user,
+            "2026-11-20",
+        )
+
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(
+            f"{self.url}{analysis.id}/"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["stock_symbol"], "HIST")
+        self.assertIn("support_zones", response.data)
+        self.assertIn("resistance_zones", response.data)
+
+    def test_user_cannot_retrieve_other_users_analysis(self):
+        analysis = self.create_analysis(
+            self.other_user,
+            "2026-11-20",
+        )
+
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(
+            f"{self.url}{analysis.id}/"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_retrieve_nonexistent_analysis(self):
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(
+            f"{self.url}99999/"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

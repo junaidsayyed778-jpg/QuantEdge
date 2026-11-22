@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import StockAnalysisView, AnalysisHistoryView
+from .views import StockAnalysisView, AnalysisHistoryView, AnalysisHistoryDetailView
 
 urlpatterns = [
     path(
@@ -13,4 +13,9 @@ urlpatterns = [
         AnalysisHistoryView.as_view(),
         name="analysis-history",
     ),
+    path(
+    "history/<int:pk>/",
+    AnalysisHistoryDetailView.as_view(),
+    name="analysis-history-detail",
+),
 ]
