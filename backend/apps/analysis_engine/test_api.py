@@ -107,3 +107,91 @@ class StockAnalysisAPITests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertIn("error", response.data)
+        
+class AnalysisHistoryAPITests(APITestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="historyuser",
+            email="history@example.com",
+            password="TestPassword123!",
+        )
+
+        self.other_user = User.objects.create_user(
+            username="otheruser",
+            email="other@example.com",
+            password="TestPassword123!",
+        )
+
+        self.stock = Stock.objects.create(
+            symbol="HIST",
+            company_name="History Company",
+            exchange="NSE",
+            is_active=True,
+        )
+
+        self.url = "/api/v1/analysis/history/"
+
+    def create_analysis(self, user, analysis_date, score=50):
+        return StockAnalysis.objects.create(
+            user=user,
+            stock=self.stock,
+            analysis_date=analysis_date,
+            latest_close=150.00,
+            overall_score=score,
+            signal="bullish",
+            category_scores={"trend": 75},
+            support_zones=[],
+            resistance_zones=[],
+        )
+
+    def test_unauthenticated_history_request(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_401_UNAUTHORIZED,
+        )
+
+    def test_user_can_only_see_own_history(self):
+        self.create_analysis(self.user, "2026-11-20")
+        self.create_analysis(self.other_user, "2026-11-21")
+
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["count"], 1)
+        self.assertEqual(
+            response.data["results"][0]["stock_symbol"],
+            "HIST",
+        )
+
+    def test_empty_history(self):
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["count"], 0)
+        self.assertEqual(response.data["results"], [])
+
+    def test_history_pagination(self):
+        for day in range(1, 13):
+            self.create_analysis(
+                self.user,
+                f"2026-10-{day:02d}",
+            )
+
+        self.client.force_authenticate(user=self.user)
+
+        response = self.client.get(
+            self.url,
+            {"page": 1, "page_size": 5},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["count"], 12)
+        self.assertEqual(len(response.data["results"]), 5)
+        self.assertIsNotNone(response.data["next"])
